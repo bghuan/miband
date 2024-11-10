@@ -1,0 +1,27 @@
+<template>
+	<div class="page" @click="msg(1)" @swipe="msg"></div>
+</template>
+
+<script>
+import interconnect from "@system.interconnect";
+import vibrator from "@system.vibrator";
+
+let conn = null;
+export default {
+	onReady() {
+		conn = interconnect.instance();
+		vibrator.vibrate({ mode: "long" });
+	},
+	msg(e) {
+		if (typeof e == "object") e = e.direction;
+		conn.send({ data: { msg: e, t: Date.now() } });
+		vibrator.vibrate({ mode: "short" });
+	},
+};
+</script>
+
+<style>
+.page {
+	background-color: black;
+}
+</style>

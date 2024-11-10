@@ -1,0 +1,59 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    signingConfigs {
+    debug {
+        storeFile file('C:\\Users\\bu\\keystore.jks')
+        storePassword 'xmswearable'
+        keyAlias 'xmswearable'
+        keyPassword 'xmswearable'
+    }
+    release {
+        storeFile file('C:\\Users\\bu\\keystore.jks')
+        storePassword 'xmswearable'
+        keyAlias 'xmswearable'
+        keyPassword 'xmswearable'
+    }
+}
+    namespace 'com.xiaomi.xms.wearable.demo'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.xiaomi.xms.wearable.demo"
+        minSdk 30
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+
+    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.constraintlayout
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+}
