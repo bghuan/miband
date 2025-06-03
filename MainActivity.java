@@ -12,9 +12,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 
 import androidx.navigation.ui.AppBarConfiguration;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.xiaomi.xms.wearable.Status;
 import com.xiaomi.xms.wearable.Wearable;
 import com.xiaomi.xms.wearable.auth.AuthApi;
@@ -44,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
     static String server_ip = "192.168.10.100";
     static int server_port = 13000;
     static String server_message = "";
+    private TextInputEditText editText;
+    private InputMethodManager imm;
+    boolean is_tomato=false;
+    TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +59,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setSupportActionBar(binding.toolbar);
+        textView=findViewById(R.id.textView2);
+        editText = findViewById(R.id.editText); // 需要为 TextInputEditText 设置 ID
+        imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
         binding.fab.setOnClickListener(view -> {
             band_connnet();
@@ -65,6 +74,17 @@ public class MainActivity extends AppCompatActivity {
         });
         binding.fab3.setOnClickListener(view -> {
             band_notify();
+        });
+        binding.send.setOnClickListener(view -> {
+            String inputText = editText.getText().toString().trim();
+            if(inputText.isEmpty())return;
+            server_message = inputText;
+            new ConnectSocketTask().execute();
+            editText.setText("");
+            hideKeyboard();
+        });
+        binding.isTomato.setOnClickListener(view -> {
+            is_tomato=!is_tomato;
         });
     }
 
@@ -89,27 +109,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void alert(String str) {
+        if(!is_tomato)return;
         Snackbar.make(binding.getRoot(), str, Snackbar.LENGTH_LONG)
                 .setAnchorView(R.id.fab)
                 .setAction("Action", null).show();
+//        String a = textView.getText().toString()+"\n";
+        String  a = "";
+        textView.setText(a+str);
     }
     private void alert2(String str) {
+        if(!is_tomato)return;
         Snackbar.make(binding.getRoot(), str, Snackbar.LENGTH_SHORT)
                 .setAnchorView(R.id.fab)
                 .setAction("Action", null).show();
+//        String a = textView.getText().toString()+"\n";
+        String  a = "";
+        textView.setText(a+str);
     }
 
     private void band_notify() {
+        alert("band_notify");
         if (band_id.isEmpty()) return;
         NotifyApi notifyApi = Wearable.getNotifyApi(MainActivity.this);
         notifyApi.sendNotify(band_id, "biu", "biubiubiu")
                 .addOnSuccessListener(status -> {
+                    alert("band_notify Success");
                 }).addOnFailureListener(e -> {
                     alert(e.getMessage());
                 });
     }
 
     private void band_listen() {
+        alert("band_listen");
         if (band_id.isEmpty()) return;
         OnMessageReceivedListener onMessageReceivedListener = (nodeId, message) -> {
             String str = new String(message);
@@ -121,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         MessageApi messageApi = Wearable.getMessageApi(MainActivity.this);
         messageApi.addListener(band_id, onMessageReceivedListener)
                 .addOnSuccessListener(var1 -> {
+                    alert("band_listen Success");
                 }).addOnFailureListener(e -> {
                     alert(e.getMessage());
                 });
@@ -128,23 +160,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void band_connnet() {
+        alert("band_connnet");
         if (!band_id.isEmpty()) return;
         NodeApi api = Wearable.getNodeApi(MainActivity.this);
         api.getConnectedNodes().addOnSuccessListener(nodes -> {
             band_id = nodes.get(0).id;
             band_permission();
             band_listen();
+            alert("band_connnet Success");
         }).addOnFailureListener(e -> {
+            alert(e.getMessage());
         });
     }
 
     private void band_permission() {
+        alert("band_permission");
         AuthApi authApi = Wearable.getAuthApi(MainActivity.this);
         authApi.requestPermission(band_id, Permission.DEVICE_MANAGER, Permission.NOTIFY)
                 .addOnSuccessListener(permissions -> {
+                    alert("band_permission Success");
                 }).addOnFailureListener(e -> {
                     alert(e.getMessage());
                 });
+    }
+
+    private void hideKeyboard() {
+        View view = getCurrentFocus();
+        if (view != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
 }
